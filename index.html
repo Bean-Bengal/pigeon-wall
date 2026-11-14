@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pigeon Wall</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4efe3;color:#2b2b2b;font-family:Georgia,serif}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+h1{font-size:1.6rem;margin:0 0 4px}
+.sub{margin:0 0 16px;color:#665}
+#banner{padding:8px 10px;border-radius:6px;font:14px monospace;margin-bottom:16px}
+.pass{background:#cfe8c8}.fail{background:#f3c4c4}
+.grid{display:grid;grid-template-columns:1fr;gap:14px;list-style:none;margin:0;padding:0}
+@media(min-width:480px){.grid{grid-template-columns:1fr 1fr}}
+@media(min-width:760px){.grid{grid-template-columns:repeat(3,1fr)}}
+figure{margin:0;min-width:0;background:#fff;padding:8px;border-radius:6px;box-shadow:0 1px 3px #0003}
+figure svg{width:100%;height:auto;display:block;background:#e8f0f4;border-radius:3px}
+figcaption{margin-top:6px;font-size:.95rem;overflow-wrap:anywhere}
+.date{display:block;font-size:.8rem;color:#776}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Pigeon Wall</h1>
+<p class="sub">Old ones first. New ones last.</p>
+<div id="banner"></div>
+<ul class="grid" id="grid"></ul>
+</div>
+<script>
+const gridEl=document.getElementById('grid');
+const bannerEl=document.getElementById('banner');
+// each drawing: body ellipse size, head offset, colour, extras
+const drawings=[
+{when:'Early',cap:'First pigeon. A grey potato with a beak.',body:[34,26],head:12,col:'#999',eye:0,extra:''},
+{when:'Early',cap:'Pigeon, side view. Legs too long, left them.',body:[38,24],head:13,col:'#8a8f99',eye:1,extra:'legs'},
+{when:'Middle',cap:'Pigeon on a wire. The wire is wobbly.',body:[40,24],head:13,col:'#7d8590',eye:1,extra:'wire'},
+{when:'Middle',cap:'Fat pigeon. On purpose this time.',body:[46,34],head:12,col:'#78808c',eye:1,extra:'legs'},
+{when:'Recent',cap:'Pigeon with a green neck patch, light from the left.',body:[42,28],head:14,col:'#6c7480',eye:1,extra:'neck'},
+{when:'Recent',cap:'Pigeon wearing a tiny green cloak.',body:[42,28],head:14,col:'#6c7480',eye:1,extra:'cloak'}
+];
+function svgFor(d){
+const cx=100,cy=85,[bw,bh]=d.body;
+let s='<svg viewBox="0 0 200 150" role="img" aria-label="'+d.cap+'">';
+if(d.extra==='wire')s+='<path d="M0 118 Q100 126 200 112" stroke="#333" fill="none" stroke-width="2"/>';
+if(d.extra==='legs'||d.extra==='wire')s+='<path d="M92 '+(cy+bh-4)+'v22M108 '+(cy+bh-4)+'v22" stroke="#c66" stroke-width="3"/>';
+s+='<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+bw+'" ry="'+bh+'" fill="'+d.col+'"/>';
+s+='<circle cx="'+(cx+bw-6)+'" cy="'+(cy-bh+2)+'" r="'+d.head+'" fill="'+d.col+'"/>';
+s+='<path d="M'+(cx+bw+6)+' '+(cy-bh+1)+'l12 4-12 3z" fill="#e9b44c"/>';
+if(d.eye)s+='<circle cx="'+(cx+bw-2)+'" cy="'+(cy-bh)+'" r="2" fill="#111"/>';
+if(d.extra==='neck')s+='<ellipse cx="'+(cx+bw-12)+'" cy="'+(cy-bh+12)+'" rx="8" ry="5" fill="#4a9a6a"/>';
+if(d.extra==='cloak')s+='<path d="M'+(cx-bw+8)+' '+(cy-6)+'Q'+cx+' '+(cy-bh-8)+' '+(cx+bw-8)+' '+(cy-bh+10)+'L'+(cx+bw-14)+' '+(cy+bh)+'Q'+cx+' '+(cy+bh+8)+' '+(cx-bw+10)+' '+(cy+bh-6)+'z" fill="#3f8f4f"/>';
+return s+'</svg>';
+}
+drawings.forEach(d=>{
+const li=document.createElement('li');
+li.innerHTML='<figure>'+svgFor(d)+'<figcaption><span class="date">'+d.when+'</span>'+d.cap+'</figcaption></figure>';
+gridEl.appendChild(li);
+});
+// load-time checks
+function check(){
+const errs=[];
+if(gridEl.querySelectorAll('figure').length!==drawings.length)errs.push('figure count');
+gridEl.querySelectorAll('figcaption').forEach(c=>{if(c.textContent.trim().length<5)errs.push('empty caption')});
+const docEl=document.documentElement;
+if(docEl.scrollWidth>window.innerWidth)errs.push('sideways overflow at '+window.innerWidth+'px');
+return errs;
+}
+function run(){
+const e=check();
+bannerEl.className=e.length?'fail':'pass';
+bannerEl.textContent=e.length?'FAIL: '+e.join(', '):'PASS: '+drawings.length+' drawings, no sideways scroll at '+window.innerWidth+'px';
+}
+run();
+window.addEventListener('resize',run);
+</script>
+</body>
+</html>
